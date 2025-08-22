@@ -1,5 +1,6 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_buddy_app/pages/ConnectionsPage.dart';
 import 'package:gym_buddy_app/pages/HomePage.dart';
 
 void main() {
@@ -28,9 +29,9 @@ class _PageSwitcher extends State<PageSwitcher> {
 
   final pages = [
     HomePage(),
-    HomePage(),
-    HomePage(),
-    HomePage(),
+    ConnectionsPage(),
+    ConnectionsPage(),
+    ConnectionsPage(),
   ];
 
   @override
@@ -56,9 +57,9 @@ class _PageSwitcher extends State<PageSwitcher> {
             child: Container(
               width: 320,
               height: 75,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Colors.black,
-                borderRadius: BorderRadius.all(Radius.circular(60)),
+                borderRadius: const BorderRadius.all(Radius.circular(60)),
               ),
               child: Padding(
                 padding: const EdgeInsets.only(top: 10),
