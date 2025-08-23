@@ -39,14 +39,9 @@ class _PageSwitcher extends State<PageSwitcher> {
     return Stack(
       children: [
         Positioned.fill(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            switchInCurve: Curves.easeInOut,
-            switchOutCurve: Curves.easeInOut,
-            child: KeyedSubtree(
-              key: ValueKey<int>(selectedIndex),
-              child: pages[selectedIndex],
-            ),
+          child: KeyedSubtree(
+            key: ValueKey<int>(selectedIndex),
+            child: pages[selectedIndex],
           ),
         ),
 
@@ -55,8 +50,8 @@ class _PageSwitcher extends State<PageSwitcher> {
           child: Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              width: 320,
-              height: 75,
+              width: 300,
+              height: MediaQuery.of(context).size.height * 0.08,
               decoration: BoxDecoration(
                 color: Colors.black,
                 borderRadius: const BorderRadius.all(Radius.circular(60)),
