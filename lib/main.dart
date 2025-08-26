@@ -2,6 +2,7 @@ import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:gym_buddy_app/pages/ConnectionsPage.dart';
 import 'package:gym_buddy_app/pages/HomePage.dart';
+import 'package:gym_buddy_app/pages/MessagesPage.dart';
 
 void main() {
   runApp(DevicePreview(builder: (context) => MyApp()));
@@ -30,7 +31,7 @@ class _PageSwitcher extends State<PageSwitcher> {
   final pages = [
     HomePage(),
     ConnectionsPage(),
-    ConnectionsPage(),
+    MessagesPage(),
     ConnectionsPage(),
   ];
 

@@ -24,8 +24,20 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(left: 25, bottom: 10),
+              child: Text(
+                'Stories',
+                style: TextStyle(
+                  fontFamily: 'Glacial',
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+            ),
             StoryHeader(),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.only(left: 25, bottom: 10),
@@ -40,7 +52,7 @@ class _HomePageState extends State<HomePage> {
             ),
             FriendProgressWidget(),
             FriendProgressWidget(),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.only(left: 25, bottom: 10),
