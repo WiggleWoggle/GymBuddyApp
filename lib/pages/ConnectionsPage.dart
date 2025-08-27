@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_buddy_app/Users.dart';
 
 class ConnectionsPage extends StatefulWidget {
   ConnectionsPage({Key? key}) : super(key: key);
@@ -9,6 +10,14 @@ class ConnectionsPage extends StatefulWidget {
 }
 
 class _ConnectionsPageState extends State<ConnectionsPage> {
+  int topCardIndex = 0;
+
+  void _updateTopCardIndex(int newIndex) {
+    setState(() {
+      topCardIndex = newIndex;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +33,21 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).size.height * 0.107,
                   ),
-                  child: PersonCard(),
+                  child: Stack(
+                    children: [
+                      CardStackBackground(),
+                      ...List.generate(
+                        mockUsers.length,
+                            (index) {
+                          int reversedIndex = mockUsers.length - 1 - index;
+                          return PersonCard(
+                              cardIndex: reversedIndex,
+                            isTopCard: index == topCardIndex,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Align(
@@ -50,7 +73,6 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 }
 
 class LikeButtonWidget extends StatefulWidget {
-
   final VoidCallback clickMethod;
 
   LikeButtonWidget({Key? key, required this.clickMethod}) : super(key: key);
@@ -60,7 +82,6 @@ class LikeButtonWidget extends StatefulWidget {
 }
 
 class _LikeButtonWidgetState extends State<LikeButtonWidget> {
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -122,16 +143,60 @@ class _FilterWidget extends State<FilterWidget> {
   }
 }
 
+class CardStackBackground extends StatelessWidget {
+  CardStackBackground({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.center,
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(30),
+                child: Container(color: Color.fromRGBO(40, 40, 40, 1)),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: EdgeInsets.only(top: 7),
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.85,
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(30),
+                  child: Container(color: Color.fromRGBO(55, 55, 55, 1)),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class PersonCard extends StatefulWidget {
-  PersonCard({Key? key}) : super(key: key);
+  PersonCard({Key? key, required this.cardIndex, required this.isTopCard}) : super(key: key);
+
+  final int cardIndex;
+  final bool isTopCard;
 
   @override
   State<PersonCard> createState() => _PersonPanelState();
 }
 
 class _PersonPanelState extends State<PersonCard> {
+  
   bool personCardExpand = false;
-  double swipeYOffset = 0.0;
+  double swipeYOffset = 0.025;
 
   void _moveCardUp() {
     setState(() {
@@ -149,15 +214,13 @@ class _PersonPanelState extends State<PersonCard> {
             alignment: Alignment.center,
             child: Padding(
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height * 0.64,
+                top: MediaQuery.of(context).size.height * 0.65,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  LikeButtonWidget(
-                    clickMethod: _moveCardUp,
-                  ),
-                  SkipButtonWidget()
+                  LikeButtonWidget(clickMethod: _moveCardUp),
+                  SkipButtonWidget(),
                 ],
               ),
             ),
@@ -165,8 +228,8 @@ class _PersonPanelState extends State<PersonCard> {
           Padding(
             padding: EdgeInsetsGeometry.only(left: 20),
             child: AnimatedSlide(
-              duration: Duration(milliseconds: 200),
-              offset: Offset(0, swipeYOffset),
+              duration: Duration(milliseconds: 100),
+              offset: widget.isTopCard ? Offset.zero : Offset(0, 0.025),
               //TODO: move in next one and dispose of this one
               //onEnd: ,
               child: SizedBox(
@@ -180,7 +243,7 @@ class _PersonPanelState extends State<PersonCard> {
                         children: [
                           Positioned.fill(
                             child: Image.asset(
-                              'assets/personcard/profileImage.png',
+                              mockUsers[widget.cardIndex].profilePicturePath,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -202,7 +265,9 @@ class _PersonPanelState extends State<PersonCard> {
                       ),
 
                       AnimatedSlide(
-                        offset: personCardExpand ? const Offset(-1, 0) : Offset.zero,
+                        offset: personCardExpand
+                            ? const Offset(-1, 0)
+                            : Offset.zero,
                         duration: Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
                         child: Stack(
@@ -219,7 +284,10 @@ class _PersonPanelState extends State<PersonCard> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Alex, 21',
+                                      mockUsers[widget.cardIndex].profileName +
+                                          ', ' +
+                                          mockUsers[widget.cardIndex].age
+                                              .toString(),
                                       style: const TextStyle(
                                         fontFamily: 'League',
                                         color: Colors.white,
@@ -234,9 +302,11 @@ class _PersonPanelState extends State<PersonCard> {
                                           scale: 30,
                                         ),
                                         const SizedBox(width: 7),
-                                        const Text(
-                                          'Austin, Texas',
-                                          style: TextStyle(
+                                        Text(
+                                          mockUsers[widget.cardIndex].town +
+                                              ', ' +
+                                              mockUsers[widget.cardIndex].city,
+                                          style: const TextStyle(
                                             fontFamily: 'Glacial',
                                             color: Colors.white,
                                             fontSize: 20,
@@ -252,8 +322,11 @@ class _PersonPanelState extends State<PersonCard> {
                                           scale: 30,
                                         ),
                                         const SizedBox(width: 7),
-                                        const Text(
-                                          '5\'11, 180',
+                                        Text(
+                                          mockUsers[widget.cardIndex].height +
+                                              ", " +
+                                              mockUsers[widget.cardIndex]
+                                                  .weight,
                                           style: TextStyle(
                                             fontFamily: 'Glacial',
                                             color: Colors.white,
@@ -275,32 +348,32 @@ class _PersonPanelState extends State<PersonCard> {
                         child: Padding(
                           padding: const EdgeInsets.only(left: 20, top: 20),
                           child: Container(
-                            width: 145,
-                            height: 40,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: const BorderRadius.all(
-                                Radius.circular(60),
-                              ),
+                              borderRadius: BorderRadius.circular(60),
                             ),
-                            child: Padding(
-                              padding: EdgeInsets.only(left: 8),
-                              child: Row(
-                                children: [
-                                  Image.asset('assets/icons/medal.png', scale: 18),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 3),
-                                    child: Text(
-                                      'Titan Lifter',
-                                      style: TextStyle(
-                                        fontFamily: 'Glacial',
-                                        color: Colors.black,
-                                        fontSize: 20,
-                                      ),
-                                    ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Image.asset(
+                                  'assets/icons/medal.png',
+                                  scale: 18,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  mockUsers[widget.cardIndex].division.name +
+                                      ' Lifter',
+                                  style: const TextStyle(
+                                    fontFamily: 'Glacial',
+                                    color: Colors.black,
+                                    fontSize: 20,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -334,7 +407,9 @@ class _PersonPanelState extends State<PersonCard> {
                         child: Align(
                           alignment: Alignment.center,
                           child: AnimatedSlide(
-                            offset: personCardExpand ? Offset(0, 0) : const Offset(2, 0),
+                            offset: personCardExpand
+                                ? Offset(0, 0)
+                                : const Offset(2, 0),
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeInOut,
                             child: Container(
@@ -445,9 +520,9 @@ class _PersonPanelState extends State<PersonCard> {
                 ),
               ),
             ),
-          )
+          ),
         ],
-      )
+      ),
     );
   }
 }
