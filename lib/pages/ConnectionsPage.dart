@@ -10,117 +10,93 @@ class ConnectionsPage extends StatefulWidget {
 }
 
 class _ConnectionsPageState extends State<ConnectionsPage> {
-  int topCardIndex = 0;
 
-  void _updateTopCardIndex(int newIndex) {
-    setState(() {
-      topCardIndex = newIndex;
-    });
+  List<User> users = mockUsers;
+  List<User> displayedUsers = [];
+  int currentIndex = 0;
+  final int maxVisibleCards = 2;
+
+  @override
+  void initState() {
+    super.initState();
+    displayedUsers = users.take(maxVisibleCards).toList();
+    users.remove(displayedUsers);
+    currentIndex = maxVisibleCards;
+  }
+
+  void updateStack() {
+    currentIndex++;
+
+    displayedUsers.removeLast();
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Color.fromRGBO(21, 21, 21, 1),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.only(top: 40),
-          child: Stack(
-            children: [
-              Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).size.height * 0.107,
+          child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height * 1,
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: 120),
+                    child: Stack(
+                      children: displayedUsers.asMap().entries.map((entry) {
+
+                        final index = entry.key;
+                        final user = entry.value;
+
+                        final positionOffset = 10.0 * index;
+
+                        return Positioned(
+                          top: positionOffset,
+                          left: 0,
+                          right: 0,
+                          child: PersonPanelSwipeableWidget(
+                            user: user,
+                            isTopCard: index == displayedUsers.length - 1,
+                            onSwipeLeft: () {
+                              setState(() {
+                                updateStack();
+                              });
+                            },
+                            onSwipeRight: () {
+                              setState(() {
+                                updateStack();
+                              });
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
-                  child: Stack(
-                    children: [
-                      CardStackBackground(),
-                      ...List.generate(
-                        mockUsers.length,
-                            (index) {
-                          int reversedIndex = mockUsers.length - 1 - index;
-                          return PersonCard(
-                              cardIndex: reversedIndex,
-                            isTopCard: index == topCardIndex,
-                          );
-                        },
-                      ),
-                    ],
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: EdgeInsetsGeometry.only(left: 20, top: 30),
+                      child: Image.asset('assets/icons/logo.png', scale: 6),
+                    ),
                   ),
-                ),
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 20, top: 27),
+                      child: FilterWidget(),
+                    ),
+                  ),
+                ],
               ),
-              Align(
-                alignment: Alignment.topLeft,
-                child: Padding(
-                  padding: EdgeInsetsGeometry.only(left: 20, top: 30),
-                  child: Image.asset('assets/icons/logo.png', scale: 6),
-                ),
-              ),
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 20, top: 27),
-                  child: FilterWidget(),
-                ),
-              ),
-            ],
           ),
         ),
       ),
     );
   }
 }
-
-class LikeButtonWidget extends StatefulWidget {
-  final VoidCallback clickMethod;
-
-  LikeButtonWidget({Key? key, required this.clickMethod}) : super(key: key);
-
-  @override
-  State<LikeButtonWidget> createState() => _LikeButtonWidgetState();
-}
-
-class _LikeButtonWidgetState extends State<LikeButtonWidget> {
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.clickMethod,
-      child: Container(
-        width: 100,
-        height: MediaQuery.of(context).size.height * 0.055,
-        decoration: BoxDecoration(
-          color: Color.fromRGBO(200, 255, 200, 1),
-          borderRadius: const BorderRadius.all(Radius.circular(90)),
-        ),
-        child: Image.asset('assets/icons/plus.png', scale: 20),
-      ),
-    );
-  }
-}
-
-class SkipButtonWidget extends StatefulWidget {
-  SkipButtonWidget({Key? key}) : super(key: key);
-
-  @override
-  State<SkipButtonWidget> createState() => _SkipButtonWidgetState();
-}
-
-class _SkipButtonWidgetState extends State<SkipButtonWidget> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 100,
-      height: MediaQuery.of(context).size.height * 0.055,
-      decoration: BoxDecoration(
-        color: Color.fromRGBO(255, 200, 200, 1),
-        borderRadius: const BorderRadius.all(Radius.circular(90)),
-      ),
-      child: Image.asset('assets/icons/x.png', scale: 20),
-    );
-  }
-}
-
 class FilterWidget extends StatefulWidget {
   FilterWidget({Key? key}) : super(key: key);
 
@@ -143,50 +119,111 @@ class _FilterWidget extends State<FilterWidget> {
   }
 }
 
-class CardStackBackground extends StatelessWidget {
-  CardStackBackground({Key? key}) : super(key: key);
+class PersonPanelSwipeableWidget extends StatefulWidget {
+
+  const PersonPanelSwipeableWidget({super.key, required this.onSwipeLeft, required this.onSwipeRight, required this.user, required this.isTopCard});
+
+  final User user;
+  final bool isTopCard;
+  final VoidCallback onSwipeLeft;
+  final VoidCallback onSwipeRight;
+
+  @override
+  State<PersonPanelSwipeableWidget> createState() => _PersonPanelSwipeableWidgetState();
+
+}
+
+class _PersonPanelSwipeableWidgetState extends State<PersonPanelSwipeableWidget> with SingleTickerProviderStateMixin {
+  Offset cardOffset = Offset.zero;
+  late AnimationController _controller;
+  late Animation<Offset> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+  }
+
+  void _swipeCard(Offset targetOffset, VoidCallback onComplete) {
+    _animation = Tween<Offset>(begin: cardOffset, end: targetOffset)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut))
+      ..addListener(() {
+        setState(() {
+          cardOffset = _animation.value;
+        });
+      });
+
+    _controller.forward(from: 0).then((_) => onComplete());
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.center,
-      child: Stack(
-        children: [
-          Align(
-            alignment: Alignment.center,
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.8,
-              height: MediaQuery.of(context).size.height * 0.6,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(30),
-                child: Container(color: Color.fromRGBO(40, 40, 40, 1)),
-              ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.center,
-            child: Padding(
-              padding: EdgeInsets.only(top: 7),
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.85,
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(30),
-                  child: Container(color: Color.fromRGBO(55, 55, 55, 1)),
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return GestureDetector(
+      onPanUpdate: (details) {
+        setState(() {
+          cardOffset += details.delta;
+        });
+      },
+      onPanEnd: (details) {
+        if (cardOffset.dx > 150) {
+          _swipeCard(Offset(screenWidth, 0), widget.onSwipeRight);
+        } else if (cardOffset.dx < -150) {
+          _swipeCard(Offset(-screenWidth, 0), widget.onSwipeLeft);
+        } else {
+          _swipeCard(Offset.zero, () {});
+        }
+      },
+      child: Transform.translate(
+        offset: cardOffset,
+        child: Transform.rotate(
+          angle: cardOffset.dx * 0.0003,
+          child: Stack(
+            children: [
+              PersonCard(user: widget.user, isTopCard: widget.isTopCard),
+              Padding(
+                padding: EdgeInsets.only(left: 20),
+                child: IgnorePointer(
+                  ignoring: true,
+                  child: Opacity(
+                    opacity: (cardOffset.dx.abs() / 200).clamp(0, 1),
+                    child: Container(
+                      width: screenWidth * 0.91,
+                      height: MediaQuery.of(context).size.height * 0.62,
+                      decoration: BoxDecoration(
+                        color: cardOffset.dx > 0
+                            ? Colors.green.withOpacity(0.4)
+                            : Colors.red.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Center(
+                        child: Image.asset(
+                          cardOffset.dx > 0
+                              ? 'assets/icons/accept.png'
+                              : 'assets/icons/discard.png',
+                          scale: 4,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              )
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
 class PersonCard extends StatefulWidget {
-  PersonCard({Key? key, required this.cardIndex, required this.isTopCard}) : super(key: key);
+  PersonCard({Key? key, required this.user, required this.isTopCard}) : super(key: key);
 
-  final int cardIndex;
+  final User user;
   final bool isTopCard;
 
   @override
@@ -194,317 +231,117 @@ class PersonCard extends StatefulWidget {
 }
 
 class _PersonPanelState extends State<PersonCard> {
-  
-  bool personCardExpand = false;
-  double swipeYOffset = 0.025;
 
-  void _moveCardUp() {
-    setState(() {
-      swipeYOffset = -1.5;
-    });
-  }
+  bool personCardExpand = false;
 
   @override
   Widget build(BuildContext context) {
+
     return Align(
-      alignment: Alignment.center,
-      child: Stack(
-        children: [
-          Align(
-            alignment: Alignment.center,
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height * 0.65,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  LikeButtonWidget(clickMethod: _moveCardUp),
-                  SkipButtonWidget(),
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsetsGeometry.only(left: 20),
-            child: AnimatedSlide(
-              duration: Duration(milliseconds: 100),
-              offset: widget.isTopCard ? Offset.zero : Offset(0, 0.025),
-              //TODO: move in next one and dispose of this one
-              //onEnd: ,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.91,
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(30),
-                  child: Stack(
-                    children: [
-                      Stack(
-                        children: [
-                          Positioned.fill(
-                            child: Image.asset(
-                              mockUsers[widget.cardIndex].profilePicturePath,
-                              fit: BoxFit.cover,
-                            ),
+        alignment: Alignment.center,
+        child: Padding(
+          padding: EdgeInsetsGeometry.only(left: 0),
+          child: AnimatedSlide(
+            duration: Duration(milliseconds: 100),
+            offset: widget.isTopCard ? Offset.zero : Offset(0, -0.01),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.91,
+              height: MediaQuery.of(context).size.height * 0.62,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(30),
+                child: Stack(
+                  children: [
+                    Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Image.asset(
+                            widget.user.profilePicturePath,
+                            fit: BoxFit.cover,
                           ),
-
-                          Positioned.fill(
-                            child: AnimatedContainer(
-                              duration: Duration(milliseconds: 300),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: [Colors.black, Colors.transparent],
-                                  stops: [0.0, personCardExpand ? 1.0 : 0.4],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      AnimatedSlide(
-                        offset: personCardExpand
-                            ? const Offset(-1, 0)
-                            : Offset.zero,
-                        duration: Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                        child: Stack(
-                          children: [
-                            Align(
-                              alignment: Alignment.bottomRight,
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 20,
-                                  bottom: 20,
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      mockUsers[widget.cardIndex].profileName +
-                                          ', ' +
-                                          mockUsers[widget.cardIndex].age
-                                              .toString(),
-                                      style: const TextStyle(
-                                        fontFamily: 'League',
-                                        color: Colors.white,
-                                        fontSize: 30,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 0),
-                                    Row(
-                                      children: [
-                                        Image.asset(
-                                          'assets/icons/location.png',
-                                          scale: 30,
-                                        ),
-                                        const SizedBox(width: 7),
-                                        Text(
-                                          mockUsers[widget.cardIndex].town +
-                                              ', ' +
-                                              mockUsers[widget.cardIndex].city,
-                                          style: const TextStyle(
-                                            fontFamily: 'Glacial',
-                                            color: Colors.white,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Row(
-                                      children: [
-                                        Image.asset(
-                                          'assets/icons/information.png',
-                                          scale: 30,
-                                        ),
-                                        const SizedBox(width: 7),
-                                        Text(
-                                          mockUsers[widget.cardIndex].height +
-                                              ", " +
-                                              mockUsers[widget.cardIndex]
-                                                  .weight,
-                                          style: TextStyle(
-                                            fontFamily: 'Glacial',
-                                            color: Colors.white,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
-                      ),
 
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 20, top: 20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
+                        Positioned.fill(
+                          child: AnimatedContainer(
+                            duration: Duration(milliseconds: 300),
                             decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(60),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Image.asset(
-                                  'assets/icons/medal.png',
-                                  scale: 18,
-                                ),
-                                const SizedBox(width: 3),
-                                Text(
-                                  mockUsers[widget.cardIndex].division.name +
-                                      ' Lifter',
-                                  style: const TextStyle(
-                                    fontFamily: 'Glacial',
-                                    color: Colors.black,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 20, bottom: 20),
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                personCardExpand = !personCardExpand;
-                              });
-                            },
-                            child: AnimatedRotation(
-                              turns: personCardExpand ? 0.5 : 0.0,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                              child: Image.asset(
-                                'assets/icons/more.png',
-                                scale: 12,
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [Colors.black, Colors.transparent],
+                                stops: [0.0, personCardExpand ? 1.0 : 0.4],
                               ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
+                    ),
 
-                      Padding(
-                        padding: EdgeInsets.only(top: 100),
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: AnimatedSlide(
-                            offset: personCardExpand
-                                ? Offset(0, 0)
-                                : const Offset(2, 0),
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                            child: Container(
-                              width: 330,
+                    AnimatedSlide(
+                      offset: personCardExpand
+                          ? const Offset(-1, 0)
+                          : Offset.zero,
+                      duration: Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      child: Stack(
+                        children: [
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                left: 20,
+                                bottom: 20,
+                              ),
                               child: Column(
+                                mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Bio',
+                                    widget.user.profileName +
+                                        ', ' +
+                                        widget.user.age
+                                            .toString(),
                                     style: const TextStyle(
                                       fontFamily: 'League',
                                       color: Colors.white,
                                       fontSize: 30,
                                     ),
                                   ),
-                                  Text(
-                                    'My name is Alex and I’ve been lifting forover 5 years. I need a gym buddy to spotme and help me film gym content.',
-                                    style: const TextStyle(
-                                      fontFamily: 'Glaical',
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      overflow: TextOverflow.clip,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 40),
-                                  Text(
-                                    'Pinned Stats',
-                                    style: const TextStyle(
-                                      fontFamily: 'League',
-                                      color: Colors.white,
-                                      fontSize: 30,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
+                                  const SizedBox(height: 0),
                                   Row(
                                     children: [
                                       Image.asset(
-                                        'assets/icons/pin.png',
-                                        scale: 28,
+                                        'assets/icons/location.png',
+                                        scale: 30,
                                       ),
-                                      const SizedBox(width: 10),
+                                      const SizedBox(width: 7),
                                       Text(
-                                        '315 lb Bench Press',
+                                        widget.user.town +
+                                            ', ' +
+                                            widget.user.city,
                                         style: const TextStyle(
-                                          fontFamily: 'Glaical',
+                                          fontFamily: 'Glacial',
                                           color: Colors.white,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.clip,
+                                          fontSize: 20,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 10),
                                   Row(
                                     children: [
                                       Image.asset(
-                                        'assets/icons/pin.png',
-                                        scale: 28,
+                                        'assets/icons/information.png',
+                                        scale: 30,
                                       ),
-                                      const SizedBox(width: 10),
+                                      const SizedBox(width: 7),
                                       Text(
-                                        '635 lb Deadlift',
-                                        style: const TextStyle(
-                                          fontFamily: 'Glaical',
+                                        widget.user.height +
+                                            ", " +
+                                            widget.user.weight,
+                                        style: TextStyle(
+                                          fontFamily: 'Glacial',
                                           color: Colors.white,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.clip,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 40),
-                                  Text(
-                                    'Routine',
-                                    style: const TextStyle(
-                                      fontFamily: 'League',
-                                      color: Colors.white,
-                                      fontSize: 30,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Row(
-                                    children: [
-                                      Image.asset(
-                                        'assets/icons/clock.png',
-                                        scale: 28,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        'Push / Pull / Legs - 6 Days',
-                                        style: const TextStyle(
-                                          fontFamily: 'Glaical',
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          overflow: TextOverflow.clip,
+                                          fontSize: 20,
                                         ),
                                       ),
                                     ],
@@ -513,17 +350,190 @@ class _PersonPanelState extends State<PersonCard> {
                               ),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 20, top: 20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(60),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                'assets/icons/medal.png',
+                                scale: 18,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                widget.user.division.name +
+                                    ' Lifter',
+                                style: const TextStyle(
+                                  fontFamily: 'Glacial',
+                                  color: Colors.black,
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 20, bottom: 20),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              personCardExpand = !personCardExpand;
+                            });
+                          },
+                          child: AnimatedRotation(
+                            turns: personCardExpand ? 0.5 : 0.0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            child: Image.asset(
+                              'assets/icons/more.png',
+                              scale: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: EdgeInsets.only(top: 100),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: AnimatedSlide(
+                          offset: personCardExpand
+                              ? Offset(0, 0)
+                              : const Offset(2, 0),
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          child: Container(
+                            width: 330,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Bio',
+                                  style: const TextStyle(
+                                    fontFamily: 'League',
+                                    color: Colors.white,
+                                    fontSize: 30,
+                                  ),
+                                ),
+                                Text(
+                                  'My name is Alex and I’ve been lifting forover 5 years. I need a gym buddy to spotme and help me film gym content.',
+                                  style: const TextStyle(
+                                    fontFamily: 'Glaical',
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    overflow: TextOverflow.clip,
+                                  ),
+                                ),
+                                const SizedBox(height: 40),
+                                Text(
+                                  'Pinned Stats',
+                                  style: const TextStyle(
+                                    fontFamily: 'League',
+                                    color: Colors.white,
+                                    fontSize: 30,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    Image.asset(
+                                      'assets/icons/pin.png',
+                                      scale: 28,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      '315 lb Bench Press',
+                                      style: const TextStyle(
+                                        fontFamily: 'Glaical',
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        overflow: TextOverflow.clip,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Image.asset(
+                                      'assets/icons/pin.png',
+                                      scale: 28,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      '635 lb Deadlift',
+                                      style: const TextStyle(
+                                        fontFamily: 'Glaical',
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        overflow: TextOverflow.clip,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 40),
+                                Text(
+                                  'Routine',
+                                  style: const TextStyle(
+                                    fontFamily: 'League',
+                                    color: Colors.white,
+                                    fontSize: 30,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    Image.asset(
+                                      'assets/icons/clock.png',
+                                      scale: 28,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      'Push / Pull / Legs - 6 Days',
+                                      style: const TextStyle(
+                                        fontFamily: 'Glaical',
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        overflow: TextOverflow.clip,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-        ],
-      ),
-    );
+        ),
+      );
+
   }
 }
 
