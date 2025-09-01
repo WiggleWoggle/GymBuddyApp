@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:gym_buddy_app/UserDirectMessages.dart';
 
 class MessagesPage extends StatefulWidget {
 
@@ -127,15 +128,38 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
                                     ),
                                   ),
                                   const SizedBox(width: 10),
-                                  Container(
+                                  SizedBox(
                                     width: 60,
                                     height: 60,
-                                    decoration: const BoxDecoration(shape: BoxShape.circle),
-                                    child: ClipOval(
-                                      child: Image.asset(
-                                        'assets/personcard/profileImage1.png',
-                                        fit: BoxFit.cover,
-                                      ),
+                                    child: Stack(
+                                      children: [
+                                        Center(
+                                          child: Container(
+                                            width: 60,
+                                            height: 60,
+                                            decoration: BoxDecoration(shape: BoxShape.circle),
+                                            child: ClipOval(
+                                              child: Image.asset(
+                                                'assets/personcard/testPfp.png',
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          bottom: 4,
+                                          right: 0,
+                                          child: Container(
+                                            width: 19,
+                                            height: 19,
+                                            decoration: BoxDecoration(
+                                              color: Colors.green,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(color: Colors.black, width: 2),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(width: 10),
@@ -144,7 +168,7 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: const [
                                       Text(
-                                        'Alex',
+                                        'Aditya',
                                         style: TextStyle(
                                           fontFamily: 'Glacial',
                                           color: Colors.white,
@@ -152,7 +176,7 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
                                         ),
                                       ),
                                       Text(
-                                        'Active 15m ago',
+                                        'Active now',
                                         style: TextStyle(
                                           fontFamily: 'Glacial',
                                           color: Color.fromRGBO(200, 200, 200, 1),
@@ -161,9 +185,101 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
                                       ),
                                     ],
                                   ),
+                                  const Spacer(),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 20),
+                                    child: PopupMenuButton<String>(
+                                      onSelected: (value) {
+                                        if (value == 'block') {
+                                        } else if (value == 'report') {
+                                        }
+                                      },
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      color: const Color.fromRGBO(42, 42, 42, 1),
+                                      tooltip: "",
+                                      splashRadius: 0,
+                                      itemBuilder: (context) => [
+                                        PopupMenuItem(
+                                            value: 'mute',
+                                            child: Padding(
+                                              padding: EdgeInsets.only(left: 5),
+                                              child: SizedBox(
+                                                width: 90,
+                                                child: Row(
+                                                  children: [
+                                                    Image.asset('assets/icons/mute.png', scale: 28),
+                                                    const SizedBox(width: 10),
+                                                    const Text(
+                                                      'Mute',
+                                                      style: TextStyle(
+                                                        fontFamily: 'Glacial',
+                                                        fontSize: 18,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            )
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'report',
+                                          child: Padding(
+                                            padding: EdgeInsets.only(left: 5),
+                                            child: SizedBox(
+                                              width: 90,
+                                              child: Row(
+                                                children: [
+                                                  Image.asset('assets/icons/report.png', scale: 28),
+                                                  const SizedBox(width: 10),
+                                                  const Text(
+                                                    'Report',
+                                                    style: TextStyle(
+                                                      fontFamily: 'Glacial',
+                                                      fontSize: 18,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        ),
+                                        PopupMenuItem(
+                                            value: 'block',
+                                            child: Padding(
+                                              padding: EdgeInsets.only(left: 5),
+                                              child: SizedBox(
+                                                width: 90,
+                                                child: Row(
+                                                  children: [
+                                                    Image.asset('assets/icons/block.png', scale: 28),
+                                                    const SizedBox(width: 10),
+                                                    const Text(
+                                                      'Block',
+                                                      style: TextStyle(
+                                                        fontFamily: 'Glacial',
+                                                        fontSize: 18,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            )
+                                        ),
+                                      ],
+                                      child: Image.asset(
+                                        'assets/icons/moreDots.png',
+                                        scale: 20,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
+                            )
                           ],
                         ),
                       ),
@@ -182,6 +298,8 @@ class DirectMessageView extends StatelessWidget {
 
   DirectMessageView({Key? key, required this.onTap}) : super(key: key);
 
+  List<Message> messageView = mockMessages;
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -191,11 +309,9 @@ class DirectMessageView extends StatelessWidget {
       child: Column(
         children: [
           SizedBox(height: 70),
-          // Fixed Header
           Padding(
             padding: const EdgeInsets.only(left: 20, top: 30),
           ),
-          // Scrollable Messages Container
           Expanded(
             child: Container(
               width: double.infinity,
@@ -206,15 +322,7 @@ class DirectMessageView extends StatelessWidget {
               ),
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(10),
-                child: Column(
-                  children: const [
-                    SentMessage(messageContent: "Hello", sent: false),
-                    SentMessage(messageContent: "Hi there!", sent: true),
-                    SentMessage(messageContent: "How's it going?", sent: false),
-                    SentMessage(messageContent: "Good, thanks!", sent: true),
-                    // Add more messages here
-                  ],
-                ),
+                child: ConversationColumn(messages: messageView,)
               ),
             ),
           ),
@@ -224,7 +332,51 @@ class DirectMessageView extends StatelessWidget {
   }
 }
 
-class SentMessage extends StatelessWidget {
+class ConversationColumn extends StatelessWidget {
+  final List<Message> messages;
+
+  const ConversationColumn({super.key, required this.messages});
+
+  @override
+  Widget build(BuildContext context) {
+    final grouped = groupMessagesByDate(messages);
+
+    final sortedDates = grouped.keys.toList()..sort((a, b) => a.compareTo(b));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: sortedDates.map((date) {
+        final messagesForDate = grouped[date]!;
+        final dayLabel = getDayLabel(date);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Center(
+                child: Text(
+                  dayLabel,
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontFamily: 'Glacial',
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+            ...messagesForDate.map((msg) => SentMessage(
+              messageContent: msg.messageContent,
+              sent: msg.isSent,
+            )),
+          ],
+        );
+      }).toList(),
+    );
+  }
+}
+
+class SentMessage extends StatefulWidget {
 
   final String messageContent;
   final bool sent;
@@ -232,35 +384,111 @@ class SentMessage extends StatelessWidget {
   const SentMessage({super.key, required this.messageContent, required this.sent});
 
   @override
+  State<SentMessage> createState() => _SentMessageState();
+}
+
+class _SentMessageState extends State<SentMessage> {
+
+  bool _heldDown = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: sent ? Alignment.centerRight : Alignment.centerLeft,
-      child: Padding(
-        padding: EdgeInsets.only(top: 10, left: 10, right: 10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-          constraints: const BoxConstraints(
-            maxWidth: 250,
+    return GestureDetector(
+      onLongPressStart: (_) => setState(() => _heldDown = !_heldDown),
+      //onLongPressEnd: (_) => setState(() => _heldDown = false),
+      child: AnimatedScale(
+        duration: _heldDown ? Duration(milliseconds: 150) : Duration(milliseconds: 250),
+        scale: _heldDown ? 1.2 : 1.0,
+        curve: _heldDown ? Curves.easeInOut : Curves.easeInBack,
+        alignment: widget.sent ? Alignment.centerRight : Alignment.centerLeft,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          child: Row(
+            mainAxisAlignment:
+            widget.sent ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    bottom: 40,
+                    left: widget.sent ? null : 0,
+                    right: widget.sent ? 0 : null,
+                    child: AnimatedScale(
+                      duration: Duration(milliseconds: 300),
+                      scale: _heldDown ? 1.0 : 0.0,
+                      curve: _heldDown ? Curves.easeInOutBack : Curves.easeInBack,
+                      child: AnimatedSlide(
+                        duration: Duration(milliseconds: 300),
+                        offset: _heldDown ? Offset(0, -0.3) : Offset(0, 1.0),
+                        curve: _heldDown ? Curves.easeInOutBack : Curves.easeInBack,
+                        child: Container(
+                          width: 100,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(84, 84, 84, 1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              AnimatedScale(
+                                duration: const Duration(milliseconds: 400),
+                                scale: _heldDown ? 1.0 : 0.0,
+                                curve: Curves.easeInOutBack,
+                                child: Text("😂"),
+                              ),
+                              AnimatedScale(
+                                duration: const Duration(milliseconds: 400),
+                                scale: _heldDown ? 1.0 : 0.0,
+                                curve: Curves.easeInOutBack,
+                                child: Text("👍"),
+                              ),
+                              AnimatedScale(
+                                duration: const Duration(milliseconds: 400),
+                                scale: _heldDown ? 1.0 : 0.0,
+                                curve: Curves.easeInOutBack,
+                                child: Text("🔥"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Message bubble
+                  Container(
+                    padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+                    constraints: const BoxConstraints(maxWidth: 250),
+                    decoration: BoxDecoration(
+                      color: widget.sent
+                          ? Colors.blue
+                          : Color.fromRGBO(84, 84, 84, 1),
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(15),
+                        topRight: const Radius.circular(15),
+                        bottomLeft:
+                        widget.sent ? const Radius.circular(15) : const Radius.circular(0),
+                        bottomRight:
+                        widget.sent ? const Radius.circular(0) : const Radius.circular(15),
+                      ),
+                    ),
+                    child: Text(
+                      widget.messageContent,
+                      style: const TextStyle(
+                        fontFamily: 'Glacial',
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          decoration: BoxDecoration(
-            color: sent ? Colors.blue : Color.fromRGBO(84, 84, 84, 1),
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(15),
-              topRight: const Radius.circular(15),
-              bottomLeft: sent ? const Radius.circular(15) : const Radius.circular(0),
-              bottomRight: sent ? const Radius.circular(0) : const Radius.circular(15),
-            ),
-          ),
-          child: Text(
-            messageContent,
-            style: const TextStyle(
-              fontFamily: 'Glacial',
-              color: Colors.white,
-              fontSize: 16,
-            ),
-          ),
-        )
-      )
+        ),
+      ),
     );
   }
 }
@@ -305,56 +533,56 @@ class MessagesDefaultView extends StatelessWidget {
           children: [
             MessageTab(
               notificationCount: 0,
-              profileName: 'Alex',
-              profilePicture: 'assets/personcard/profileImage.png',
+              profileName: 'Aditya',
+              profilePicture: 'assets/personcard/testPfp.png',
               mostRecentMessage:
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
+                  'Received 5m ago',
               onTap: () => onMessageTap(),
             ),
             MessageTab(
               notificationCount: 1,
-              profileName: 'Alex',
-              profilePicture: 'assets/personcard/profileImage.png',
+              profileName: 'User',
+              profilePicture: 'assets/personcard/user.png',
               mostRecentMessage:
                   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
               onTap: () => onMessageTap(),
             ),
             MessageTab(
               notificationCount: 10,
-              profileName: 'Alex',
-              profilePicture: 'assets/personcard/profileImage.png',
+              profileName: 'User',
+              profilePicture: 'assets/personcard/user.png',
               mostRecentMessage:
                   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
               onTap: () => onMessageTap(),
             ),
             MessageTab(
               notificationCount: 0,
-              profileName: 'Alex',
-              profilePicture: 'assets/personcard/profileImage.png',
+              profileName: 'User',
+              profilePicture: 'assets/personcard/user.png',
               mostRecentMessage:
                   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
               onTap: () => onMessageTap(),
             ),
             MessageTab(
               notificationCount: 0,
-              profileName: 'Alex',
-              profilePicture: 'assets/personcard/profileImage.png',
+              profileName: 'User',
+              profilePicture: 'assets/personcard/user.png',
               mostRecentMessage:
                   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
               onTap: () => onMessageTap(),
             ),
             MessageTab(
               notificationCount: 0,
-              profileName: 'Alex',
-              profilePicture: 'assets/personcard/profileImage.png',
+              profileName: 'User',
+              profilePicture: 'assets/personcard/user.png',
               mostRecentMessage:
                   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
               onTap: () => onMessageTap(),
             ),
             MessageTab(
               notificationCount: 0,
-              profileName: 'Alex',
-              profilePicture: 'assets/personcard/profileImage.png',
+              profileName: 'User',
+              profilePicture: 'assets/personcard/user.png',
               mostRecentMessage:
                   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
               onTap: () => onMessageTap(),
@@ -387,6 +615,7 @@ class MessageTab extends StatefulWidget {
 }
 
 class _MessageTabState extends State<MessageTab> {
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -543,7 +772,7 @@ class _OnlineFriendCircleState extends State<OnlineFriendCircle> {
                   decoration: BoxDecoration(shape: BoxShape.circle),
                   child: ClipOval(
                     child: Image.asset(
-                      'assets/personcard/profileImage.png',
+                      'assets/personcard/user.png',
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -567,7 +796,7 @@ class _OnlineFriendCircleState extends State<OnlineFriendCircle> {
         ),
         SizedBox(height: 4),
         Text(
-          'Alex',
+          'User',
           overflow: TextOverflow.clip,
           style: TextStyle(
             fontFamily: 'Glacial',

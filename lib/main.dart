@@ -32,6 +32,8 @@ class _PageSwitcher extends State<PageSwitcher> {
 
   int selectedIndex = 0;
 
+  bool hasText = false;
+
   void _setMessageContainer(bool value) {
     setState(() {
       switcherMessageContainer = value;
@@ -131,6 +133,11 @@ class _PageSwitcher extends State<PageSwitcher> {
                                       children: [
                                         Expanded(
                                           child: TextField(
+                                            onChanged: (value) {
+                                              setState(() {
+                                                hasText = value.trim().isNotEmpty;
+                                              });
+                                            },
                                             style: const TextStyle(
                                               fontFamily: 'Glacial',
                                               color: Colors.white,
@@ -149,29 +156,56 @@ class _PageSwitcher extends State<PageSwitcher> {
                                             cursorColor: Colors.white,
                                           ),
                                         ),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Image.asset(
-                                              'assets/icons/gallery.png',
-                                              scale: 13,
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Image.asset(
-                                              'assets/icons/camera.png',
-                                              scale: 13,
-                                            ),
-                                            const SizedBox(width: 10),
-                                            AnimatedScale(
-                                              scale: 1.0,
-                                              duration: Duration(milliseconds: 100),
-                                              child: Image.asset(
-                                                'assets/icons/send.png',
-                                                scale: 13,
+                                        SizedBox(
+                                          height: 40,
+                                          width: 90,
+                                          child: Stack(
+                                            alignment: Alignment.centerRight,
+                                            children: [
+                                              AnimatedSlide(
+                                                offset: hasText ? const Offset(0, 0) : const Offset(-1.3, 0),
+                                                duration: const Duration(milliseconds: 200),
+                                                curve: Curves.easeInOut,
+                                                child: AnimatedScale(
+                                                  scale: hasText ? 0.0 : 1.0,
+                                                  duration: const Duration(milliseconds: 300),
+                                                  curve: Curves.easeInOut,
+                                                  child: Image.asset(
+                                                    'assets/icons/gallery.png',
+                                                    scale: 13,
+                                                  ),
+                                                ),
                                               ),
-                                            )
-                                          ],
-                                        ),
+
+                                              const SizedBox(width: 10),
+
+                                              AnimatedSlide(
+                                                offset: hasText ? const Offset(0, 0) : Offset.zero,
+                                                duration: const Duration(milliseconds: 200),
+                                                curve: Curves.easeInOut,
+                                                child: AnimatedScale(
+                                                  scale: hasText ? 0.0 : 1.0,
+                                                  duration: const Duration(milliseconds: 300),
+                                                  curve: Curves.easeInOut,
+                                                  child: Image.asset(
+                                                    'assets/icons/camera.png',
+                                                    scale: 13,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              AnimatedScale(
+                                                scale: hasText ? 1.0 : 0.0,
+                                                duration: const Duration(milliseconds: 200),
+                                                curve: Curves.bounceInOut,
+                                                child: Image.asset(
+                                                  'assets/icons/send.png',
+                                                  scale: 13,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
                                       ],
                                     )
                                   ),
