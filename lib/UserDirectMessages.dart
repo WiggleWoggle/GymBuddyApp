@@ -1,3 +1,5 @@
+import 'package:gym_buddy_app/pages/MessagesPage.dart';
+
 class Message {
 
   final String messageID;
@@ -18,6 +20,72 @@ class DirectConversation {
   DirectConversation({required this.conversationID, required this.participantIDs, required this.messages});
 }
 
+class MessageTabData {
+
+  final int notificationCount;
+  final int streakLength;
+  final String profilePicture;
+  final String profileName;
+  final String mostRecentMessage;
+  final bool online;
+
+  MessageTabData({required this.notificationCount, required this.streakLength, required this.profilePicture, required this.profileName, required this.mostRecentMessage, required this.online});
+}
+
+final List<MessageTabData> messageData = [
+
+  MessageTabData(
+    notificationCount: 0,
+    profileName: 'Aditya',
+    profilePicture: 'assets/personcard/testPfp.png',
+    online: true,
+    streakLength: 20,
+    mostRecentMessage:
+    'Received 5m ago',
+  ),
+  MessageTabData(
+    notificationCount: 1,
+    profileName: 'User1',
+    profilePicture: 'assets/personcard/user.png',
+    online: true,
+    streakLength: 0,
+    mostRecentMessage:
+    'Text text text text text text text',
+  ),
+  MessageTabData(
+    notificationCount: 0,
+    profileName: 'User2',
+    profilePicture: 'assets/personcard/user.png',
+    online: false,
+    streakLength: 0,
+    mostRecentMessage:
+    'Text text text text text text text',
+  ),
+  MessageTabData(
+    notificationCount: 0,
+    profileName: 'User3',
+    profilePicture: 'assets/personcard/user.png',
+    online: false,
+    streakLength: 0,
+    mostRecentMessage:
+    'Text text text text text text text',
+  ),
+  MessageTabData(
+    notificationCount: 9,
+    profileName: 'User4',
+    profilePicture: 'assets/personcard/user.png',
+    online: false,
+    streakLength: 0,
+    mostRecentMessage:
+    'Text text text text text text text',
+  ),
+];
+
+List<MessageTabData> filteredMessages({bool? online}) {
+  if (online == null) return messageData;
+  return messageData.where((msg) => msg.online == online).toList();
+}
+
 final List<Message> mockMessages = [
   Message(messageID: "0", senderID: "0", messageContent: "test", timeStamp: DateTime(2025, 8, 30, 13, 51), isSent: false),
   Message(messageID: "1", senderID: "0", messageContent: "test", timeStamp: DateTime(2025, 8, 31, 13, 51), isSent: false),
@@ -25,8 +93,6 @@ final List<Message> mockMessages = [
   Message(messageID: "3", senderID: "0", messageContent: "test", timeStamp: DateTime(2025, 9, 1, 20, 10), isSent: false),
   Message(messageID: "4", senderID: "1", messageContent: "test", timeStamp: DateTime(2025, 9, 1, 20, 10), isSent: true),
 ];
-
-
 
 Map<DateTime, List<Message>> groupMessagesByDate(List<Message> messages) {
   Map<DateTime, List<Message>> grouped = {};

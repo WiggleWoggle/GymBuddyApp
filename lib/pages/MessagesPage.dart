@@ -58,7 +58,8 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AnimatedContainer(
+        backgroundColor: Color.fromRGBO(21, 21, 21, 1),
+        body: AnimatedContainer(
         duration: Duration(milliseconds: 100),
           color: _showDirectMessage ?  Colors.black :  Color.fromRGBO(21, 21, 21, 1),
         child: Stack(
@@ -147,7 +148,7 @@ class _MessagesPageState extends State<MessagesPage> with SingleTickerProviderSt
                                           ),
                                         ),
                                         Positioned(
-                                          bottom: 4,
+                                          bottom: 1,
                                           right: 0,
                                           child: Container(
                                             width: 19,
@@ -456,7 +457,6 @@ class _SentMessageState extends State<SentMessage> {
                       ),
                     ),
                   ),
-                  // Message bubble
                   Container(
                     padding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
@@ -493,33 +493,45 @@ class _SentMessageState extends State<SentMessage> {
   }
 }
 
-class MessagesDefaultView extends StatelessWidget {
+class MessagesDefaultView extends StatefulWidget {
   final Function() onMessageTap;
 
-  const MessagesDefaultView({Key? key, required this.onMessageTap})
-    : super(key: key);
+  const MessagesDefaultView({Key? key, required this.onMessageTap}) : super(key: key);
+
+  @override
+  State<MessagesDefaultView> createState() => _MessagesDefaultViewState();
+}
+
+class _MessagesDefaultViewState extends State<MessagesDefaultView> {
+  Map<String, bool> activeFilters = {
+    "Online": false,
+    "Unread": false,
+    "Muted": false,
+    "Streaks": false,
+  };
+
+  void toggleFilter(String name) {
+    setState(() {
+      activeFilters[name] = !activeFilters[name]!;
+    });
+  }
+
+  List<MessageTabData> get filteredMessages {
+    return messageData.where((msg) {
+      if (activeFilters["Online"] == true && !msg.online) return false;
+      if (activeFilters["Unread"] == true && msg.notificationCount == 0) return false;
+      if (activeFilters["Streaks"] == true && msg.streakLength == 0) return false;
+      return true;
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SizedBox(height: 20),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.only(left: 25, bottom: 10),
-          child: Text(
-            'Online',
-            style: TextStyle(
-              fontFamily: 'Glacial',
-              color: Colors.white,
-              fontSize: 20,
-            ),
-          ),
-        ),
-        OnlineFriendsHeader(),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.only(left: 25, top: 30),
+          padding: const EdgeInsets.only(left: 25, top: 19),
           child: Text(
             'Messages',
             style: TextStyle(
@@ -529,65 +541,35 @@ class MessagesDefaultView extends StatelessWidget {
             ),
           ),
         ),
+        SizedBox(height: 20),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: activeFilters.keys.map((name) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: MessagesFilter(
+                  filterName: name,
+                  selected: activeFilters[name]!,
+                  onTap: () => toggleFilter(name),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        SizedBox(height: 10),
         Column(
-          children: [
-            MessageTab(
-              notificationCount: 0,
-              profileName: 'Aditya',
-              profilePicture: 'assets/personcard/testPfp.png',
-              mostRecentMessage:
-                  'Received 5m ago',
-              onTap: () => onMessageTap(),
-            ),
-            MessageTab(
-              notificationCount: 1,
-              profileName: 'User',
-              profilePicture: 'assets/personcard/user.png',
-              mostRecentMessage:
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
-              onTap: () => onMessageTap(),
-            ),
-            MessageTab(
-              notificationCount: 10,
-              profileName: 'User',
-              profilePicture: 'assets/personcard/user.png',
-              mostRecentMessage:
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
-              onTap: () => onMessageTap(),
-            ),
-            MessageTab(
-              notificationCount: 0,
-              profileName: 'User',
-              profilePicture: 'assets/personcard/user.png',
-              mostRecentMessage:
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
-              onTap: () => onMessageTap(),
-            ),
-            MessageTab(
-              notificationCount: 0,
-              profileName: 'User',
-              profilePicture: 'assets/personcard/user.png',
-              mostRecentMessage:
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
-              onTap: () => onMessageTap(),
-            ),
-            MessageTab(
-              notificationCount: 0,
-              profileName: 'User',
-              profilePicture: 'assets/personcard/user.png',
-              mostRecentMessage:
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
-              onTap: () => onMessageTap(),
-            ),
-            MessageTab(
-              notificationCount: 0,
-              profileName: 'User',
-              profilePicture: 'assets/personcard/user.png',
-              mostRecentMessage:
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam in neque a dolor placerat fringilla. Duis pulvinar, purus eu hendrerit dapibus, libero tortor scelerisque nibh, eu placerat neque metus ut nunc. Duis ac mattis turpis, sit amet iaculis eros. Suspendisse ac lobortis quam, sed auctor quam. Donec sed ante ac nisi maximus tempor. Sed varius ex a neque aliquet vulputate. Donec blandit rutrum elit quis aliquet.',
-              onTap: () => onMessageTap(),
-            ),
-          ],
+          children: filteredMessages.map((msg) {
+            return MessageTab(
+              profileName: msg.profileName,
+              profilePicture: msg.profilePicture,
+              online: msg.online,
+              notificationCount: msg.notificationCount,
+              streakLength: msg.streakLength,
+              mostRecentMessage: msg.mostRecentMessage,
+              onTap: widget.onMessageTap,
+            );
+          }).toList(),
         ),
       ],
     );
@@ -596,13 +578,17 @@ class MessagesDefaultView extends StatelessWidget {
 
 class MessageTab extends StatefulWidget {
   final int notificationCount;
+  final int streakLength;
   final String profilePicture;
   final String profileName;
   final String mostRecentMessage;
+  final bool online;
   final VoidCallback? onTap;
 
   MessageTab({
     Key? key,
+    required this.online,
+    required this.streakLength,
     required this.notificationCount,
     required this.profilePicture,
     required this.profileName,
@@ -630,16 +616,44 @@ class _MessageTabState extends State<MessageTab> {
           children: [
             Row(
               children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: const BoxDecoration(shape: BoxShape.circle),
-                  child: ClipOval(
-                    child: Image.asset(
-                      widget.profilePicture,
-                      fit: BoxFit.cover,
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(shape: BoxShape.circle),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  widget.profilePicture,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (widget.online)
+                            Positioned(
+                              bottom: 1,
+                              right: 0,
+                              child: Container(
+                                width: 19,
+                                height: 19,
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.black, width: 2),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
                 Padding(
                   padding: EdgeInsets.only(left: 10),
@@ -678,23 +692,55 @@ class _MessageTabState extends State<MessageTab> {
                 ),
               ],
             ),
-            if (widget.notificationCount > 0)
+            if (widget.streakLength > 0)
               Positioned(
                 top: 35,
                 right: 0,
                 child: Container(
+                  height: 30,
+                  padding: const EdgeInsets.symmetric(horizontal: 11),
+                  decoration: const BoxDecoration(
+                    color: Color.fromRGBO(42, 42, 42, 1),
+                    borderRadius: BorderRadius.all(Radius.circular(90)),
+                  ),
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image.asset('assets/icons/streak.png', scale: 32),
+                        const SizedBox(width: 4),
+                        Text(
+                          widget.streakLength.toString(),
+                          style: const TextStyle(
+                            fontFamily: 'Glacial',
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            if (widget.notificationCount > 0)
+              Positioned(
+                top: 35,
+                right: widget.streakLength > 0 ? 62 : 0,
+                child: Container(
                   width: 40,
                   height: 30,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.blue,
-                    borderRadius: const BorderRadius.all(Radius.circular(90)),
+                    borderRadius: BorderRadius.all(Radius.circular(90)),
                   ),
                   child: Center(
                     child: Text(
                       widget.notificationCount > 9
                           ? '9+'
                           : widget.notificationCount.toString(),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'Glacial',
                         color: Colors.white,
                         fontSize: 14,
@@ -713,7 +759,7 @@ class _MessageTabState extends State<MessageTab> {
     //TODO: change based on screen size
     double screenWidth = MediaQuery.of(context).size.width;
 
-    int maxLength = (screenWidth / 15).floor();
+    int maxLength = (screenWidth / 20).floor();
 
     if (message.length <= maxLength) {
       return message;
@@ -722,89 +768,67 @@ class _MessageTabState extends State<MessageTab> {
   }
 }
 
-class OnlineFriendsHeader extends StatefulWidget {
-  OnlineFriendsHeader({Key? key}) : super(key: key);
+class MessagesFilterRowHeader extends StatefulWidget {
+
+  MessagesFilterRowHeader({Key? key}) : super(key: key);
 
   @override
-  State<OnlineFriendsHeader> createState() => _OnlineFriendsHeaderState();
+  State<MessagesFilterRowHeader> createState() => _MessagesFilterRowHeaderState();
 }
 
-class _OnlineFriendsHeaderState extends State<OnlineFriendsHeader> {
+class _MessagesFilterRowHeaderState extends State<MessagesFilterRowHeader> {
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 104,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 20,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14.0),
-            child: OnlineFriendCircle(),
-          );
-        },
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
+      child: Row(
+        children: [
+          MessagesFilter(filterName: 'Online', selected: false, onTap: () {  },),
+          SizedBox(width: 12),
+          MessagesFilter(filterName: 'Unread', selected: false, onTap: () {  },),
+          SizedBox(width: 12),
+          MessagesFilter(filterName: 'Muted', selected: false, onTap: () {  },),
+          SizedBox(width: 12),
+          MessagesFilter(filterName: 'Streaks', selected: false, onTap: () {  },),
+        ],
       ),
     );
   }
 }
 
-class OnlineFriendCircle extends StatefulWidget {
-  OnlineFriendCircle({Key? key}) : super(key: key);
+class MessagesFilter extends StatelessWidget {
+  final String filterName;
+  final bool selected;
+  final VoidCallback onTap;
 
-  @override
-  State<OnlineFriendCircle> createState() => _OnlineFriendCircleState();
-}
+  MessagesFilter({
+    required this.filterName,
+    required this.selected,
+    required this.onTap,
+  });
 
-class _OnlineFriendCircleState extends State<OnlineFriendCircle> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          width: 80,
-          height: 80,
-          child: Stack(
-            children: [
-              Center(
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(shape: BoxShape.circle),
-                  child: ClipOval(
-                    child: Image.asset(
-                      'assets/personcard/user.png',
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: 8,
-                right: 8,
-                child: Container(
-                  width: 19,
-                  height: 19,
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.black, width: 2),
-                  ),
-                ),
-              ),
-            ],
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 70),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : Color.fromRGBO(42, 42, 42, 1),
+          borderRadius: BorderRadius.circular(60),
         ),
-        SizedBox(height: 4),
-        Text(
-          'User',
-          overflow: TextOverflow.clip,
+        child: Text(
+          filterName,
           style: TextStyle(
             fontFamily: 'Glacial',
-            color: Colors.white,
-            fontSize: 14,
+            color: selected ? Colors.black : Colors.white,
+            fontSize: 16,
           ),
         ),
-      ],
+      ),
     );
   }
 }
