@@ -71,7 +71,7 @@ final List<MessageTabData> messageData = [
     'Text text text text text text text',
   ),
   MessageTabData(
-    notificationCount: 9,
+    notificationCount: 10,
     profileName: 'User4',
     profilePicture: 'assets/personcard/user.png',
     online: false,
