@@ -44,36 +44,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
               child: Stack(
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(top: 120),
-                    child: Stack(
-                      children: displayedUsers.asMap().entries.map((entry) {
-
-                        final index = entry.key;
-                        final user = entry.value;
-
-                        final positionOffset = 10.0 * index;
-
-                        return Positioned(
-                          top: positionOffset,
-                          left: 0,
-                          right: 0,
-                          child: PersonPanelSwipeableWidget(
-                            user: user,
-                            isTopCard: index == displayedUsers.length - 1,
-                            onSwipeLeft: () {
-                              setState(() {
-                                updateStack();
-                              });
-                            },
-                            onSwipeRight: () {
-                              setState(() {
-                                updateStack();
-                              });
-                            },
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                    padding: EdgeInsets.only(top: 60),
+                    child: PersonPanelStackWidget()
                   ),
                   Align(
                     alignment: Alignment.topLeft,
@@ -119,14 +91,75 @@ class _FilterWidget extends State<FilterWidget> {
   }
 }
 
+class PersonPanelStackWidget extends StatefulWidget {
+
+  const PersonPanelStackWidget({super.key});
+
+  @override
+  State<PersonPanelStackWidget> createState() => _PersonPanelStackWidgetState();
+}
+
+class _PersonPanelStackWidgetState extends State<PersonPanelStackWidget> {
+
+  int index = 1;
+  List<User> displayedUsers = mockUsers.take(1).toList();
+
+  void moveStackUp() {
+    if (index < mockUsers.length) {
+      setState(() {
+        displayedUsers[0] = mockUsers[index];
+        index++;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height - 300,
+      child: Center(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 700),
+            transitionBuilder: (child, animation) {
+              final curvedAnimation = CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeInOutBack,
+              );
+
+              final offsetAnimation = Tween<Offset>(
+                begin: const Offset(0, -1.14),
+                end: Offset.zero,
+              ).animate(curvedAnimation);
+
+              return SlideTransition(
+                position: offsetAnimation,
+                child: child,
+              );
+            },
+            child: displayedUsers.isNotEmpty
+                ? PersonPanelSwipeableWidget(
+              key: ValueKey(displayedUsers[0].id),
+              user: displayedUsers[0],
+              isTopCard: true,
+              onSwipeLeft: moveStackUp,
+              onSwipeRight: moveStackUp,
+            )
+                : const SizedBox.shrink(),
+          )
+      )
+    );
+  }
+}
+
 class PersonPanelSwipeableWidget extends StatefulWidget {
 
-  const PersonPanelSwipeableWidget({super.key, required this.onSwipeLeft, required this.onSwipeRight, required this.user, required this.isTopCard});
+  const PersonPanelSwipeableWidget({super.key, required this.onSwipeLeft, required this.onSwipeRight, required this.user, required this.isTopCard, this.onDragUpdate});
 
   final User user;
   final bool isTopCard;
   final VoidCallback onSwipeLeft;
   final VoidCallback onSwipeRight;
+  final ValueChanged<double>? onDragUpdate;
 
   @override
   State<PersonPanelSwipeableWidget> createState() => _PersonPanelSwipeableWidgetState();
@@ -148,15 +181,16 @@ class _PersonPanelSwipeableWidgetState extends State<PersonPanelSwipeableWidget>
   }
 
   void _swipeCard(Offset targetOffset, VoidCallback onComplete) {
-    _animation = Tween<Offset>(begin: cardOffset, end: targetOffset)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut))
-      ..addListener(() {
-        setState(() {
-          cardOffset = _animation.value;
+    if (widget.isTopCard)
+      _animation = Tween<Offset>(begin: cardOffset, end: targetOffset)
+          .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut))
+        ..addListener(() {
+          setState(() {
+            cardOffset = _animation.value;
+          });
         });
-      });
 
-    _controller.forward(from: 0).then((_) => onComplete());
+      _controller.forward(from: 0).then((_) => onComplete());
   }
 
   @override
@@ -166,7 +200,12 @@ class _PersonPanelSwipeableWidgetState extends State<PersonPanelSwipeableWidget>
     return GestureDetector(
       onPanUpdate: (details) {
         setState(() {
-          cardOffset += details.delta;
+          if (widget.isTopCard)
+            cardOffset += details.delta;
+
+          final screenWidth = MediaQuery.of(context).size.width;
+          final progress = (cardOffset.dx / (screenWidth * 0.5)).clamp(-1.0, 1.0);
+          widget.onDragUpdate?.call(progress);
         });
       },
       onPanEnd: (details) {
@@ -186,7 +225,10 @@ class _PersonPanelSwipeableWidgetState extends State<PersonPanelSwipeableWidget>
             children: [
               PersonCard(user: widget.user, isTopCard: widget.isTopCard),
               Padding(
-                padding: EdgeInsets.only(left: 20),
+                padding: EdgeInsets.only(
+                    left: 20,
+                  top: 27
+                ),
                 child: IgnorePointer(
                   ignoring: true,
                   child: Opacity(

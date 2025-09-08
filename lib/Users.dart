@@ -14,12 +14,15 @@ class User {
 
   final Division division;
 
-  User({required this.town, required this.city, required this.height, required this.division, required this.weight, required this.age, required this.profileName, required this.profilePicturePath});
+  final int id;
+
+  User({required this.id, required this.town, required this.city, required this.height, required this.division, required this.weight, required this.age, required this.profileName, required this.profilePicturePath});
 }
 
 final List<User> mockUsers = [
   User(
     profileName: 'Alex',
+    id: 0,
     age: 21,
     height: '5\'11',
     weight: '180',
@@ -30,6 +33,7 @@ final List<User> mockUsers = [
   ),
   User(
     profileName: 'Jordan',
+    id: 1,
     age: 23,
     height: '6\'0',
     weight: '175',
@@ -40,6 +44,7 @@ final List<User> mockUsers = [
   ),
   User(
     profileName: 'Phil',
+    id: 2,
     age: 31,
     height: '5\'9',
     weight: '165',
@@ -49,17 +54,8 @@ final List<User> mockUsers = [
     profilePicturePath: 'assets/personcard/profileImage3.png',
   ),
   User(
-    profileName: 'Phil',
-    age: 31,
-    height: '5\'9',
-    weight: '165',
-    town: 'Houston',
-    city: 'Texas',
-    division: Division.Advanced,
-    profilePicturePath: 'assets/personcard/profileImage3.png',
-  ),
-  User(
     profileName: 'Jamie',
+    id: 3,
     age: 31,
     height: '5\'8',
     weight: '160',
@@ -70,7 +66,8 @@ final List<User> mockUsers = [
   ),
   User(
     profileName: 'Donny',
-    age: 31,
+    id: 4,
+    age: 21,
     height: '5\'10',
     weight: '180',
     town: 'Houston',
@@ -80,6 +77,7 @@ final List<User> mockUsers = [
   ),
   User(
     profileName: 'Siddarth',
+    id: 5,
     age: 19,
     height: '5\'9',
     weight: '175',
