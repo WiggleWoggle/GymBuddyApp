@@ -47,6 +47,10 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
                     padding: EdgeInsets.only(top: 60),
                     child: PersonPanelStackWidget()
                   ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 520),
+                    child: PersonCardBelowInteraction(),
+                  ),
                   Align(
                     alignment: Alignment.topLeft,
                     child: Padding(
@@ -255,6 +259,82 @@ class _PersonPanelSwipeableWidgetState extends State<PersonPanelSwipeableWidget>
                 ),
               )
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PersonCardBelowInteraction extends StatefulWidget {
+
+  PersonCardBelowInteraction({Key? key}) : super(key: key);
+
+  @override
+  State<PersonCardBelowInteraction> createState() => _PersonCardBelowInteractionState();
+}
+
+class _PersonCardBelowInteractionState extends State<PersonCardBelowInteraction> {
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: MediaQuery.of(context).size.width - 50,
+        height: 80,
+        alignment: Alignment.center,
+        child: Container(
+          width: 400,
+          height: 70,
+          decoration: BoxDecoration(
+            color: Color.fromRGBO(42, 42, 42, 1),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    style: const TextStyle(
+                      fontFamily: 'Glacial',
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Send a message...',
+                      hintStyle: TextStyle(
+                        fontFamily: 'Glacial',
+                        color: Color.fromRGBO(142, 142, 142, 1),
+                        fontSize: 18,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding:
+                      EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                    ),
+                    cursorColor: Colors.white,
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                GestureDetector(
+                  onTap: () {
+                  },
+                  child: Image.asset(
+                    'assets/icons/emojiPrompt.png',
+                    width: 28,
+                    height: 28,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
